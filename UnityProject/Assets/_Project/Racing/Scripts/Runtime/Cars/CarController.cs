@@ -189,7 +189,7 @@ namespace UnityLab.Racing.Cars
                 }
             }
 
-            if (skidSound == null)
+            if (skidSound == null || !skidSound.isActiveAndEnabled)
                 return;
             if (skidding == 0)
             {

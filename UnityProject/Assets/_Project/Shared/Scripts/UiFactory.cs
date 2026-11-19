@@ -31,8 +31,8 @@ namespace UnityLab.Shared
         {
             if (Object.FindAnyObjectByType<EventSystem>() != null)
                 return;
-            var go = new GameObject("EventSystem", typeof(EventSystem), typeof(StandaloneInputModule));
-            Object.DontDestroyOnLoad(go);
+            // Created in the current scene: scenes that already have one keep theirs.
+            new GameObject("EventSystem", typeof(EventSystem), typeof(StandaloneInputModule));
         }
 
         public static Canvas CreateCanvas(string name, int sortingOrder = 0)

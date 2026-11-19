@@ -99,8 +99,8 @@ namespace UnityLab.Racing.Online
                 case Welcome welcome:
                     LocalPlayerId = welcome.You.Id;
                     localCompetitor.Nickname = welcome.You.Nickname;
-                    PlaceOnGrid(localCompetitor.transform, welcome.You.Slot);
                     SetLocalCarFrozen(false);
+                    PlaceOnGrid(localCompetitor.transform, welcome.You.Slot);
                     foreach (PlayerInfo other in welcome.Others)
                         SpawnRemote(other);
                     HideStatus();

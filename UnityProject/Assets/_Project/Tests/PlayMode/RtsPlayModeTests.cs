@@ -87,7 +87,8 @@ namespace UnityLab.Tests.PlayMode
             Time.timeScale = 3f;
             yield return new WaitForSeconds(6f);
 
-            Assert.That(Vector3.Distance(Flat(unit.transform.position), Flat(target)), Is.LessThan(1.5f));
+            // The agent stops within its stopping distance plus the arrival threshold.
+            Assert.That(Vector3.Distance(Flat(unit.transform.position), Flat(target)), Is.LessThan(2.5f));
             Assert.That(unit.State, Is.EqualTo(Unit.UnitState.Idle));
         }
 

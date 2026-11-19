@@ -111,7 +111,6 @@ jobs:
 
   unity-build:
     name: Build ${{ matrix.targetPlatform }}
-    needs: unity-tests
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -232,7 +231,7 @@ jobs:
 
   pages:
     name: Deploy WebGL to GitHub Pages
-    needs: [unity-build, smoke-test]
+    needs: [unity-tests, unity-build, smoke-test]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:

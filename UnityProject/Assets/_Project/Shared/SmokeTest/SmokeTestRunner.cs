@@ -95,7 +95,11 @@ namespace UnityLab.SmokeTest
 
             yield return new WaitForSeconds(5f);
             yield return Screenshot("02-racing-start");
-            yield return new WaitForSeconds(15f);
+            for (int i = 0; i < 6; i++)
+            {
+                yield return new WaitForSeconds(2.5f);
+                LogStandings(circuit);
+            }
             yield return Screenshot("03-racing");
 
             IReadOnlyList<Competitor> standings = circuit.Standings;
@@ -103,6 +107,14 @@ namespace UnityLab.SmokeTest
             foreach (Competitor competitor in standings)
                 Check(competitor.Progress.WaypointsPassed >= 3,
                     $"{competitor.Nickname} drives through the waypoints ({competitor.Progress.WaypointsPassed} passed)");
+        }
+
+        void LogStandings(CircuitManager circuit)
+        {
+            var line = new StringBuilder("Standings:");
+            foreach (Competitor c in circuit.Standings)
+                line.Append($" {c.Position}. {c.Nickname} wp={c.Progress.WaypointsPassed} next={c.Progress.NextWaypoint} at {c.transform.position:F0};");
+            Log(line.ToString());
         }
 
         IEnumerator RtsStep()

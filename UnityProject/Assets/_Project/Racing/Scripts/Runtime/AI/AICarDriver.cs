@@ -80,10 +80,9 @@ namespace UnityLab.Racing.AI
             if (speedRatio >= 0.16f && cornerRatio >= 0.4f)
                 throttle = Mathf.Lerp(0f, accelerationSensitivity, 1f - cornerRatio);
 
-            float steering = Mathf.Clamp(targetAngle * steeringSensitivity, -1f, 1f);
-            float avoidance = SenseObstacles();
-            if (avoidance != 0f)
-                steering = Mathf.Clamp(avoidance, -1f, 1f);
+            // Avoidance is added to the steering towards the target, so a car next to a wall or
+            // another car still heads for the next waypoint instead of only fleeing the obstacle.
+            float steering = Mathf.Clamp(targetAngle * steeringSensitivity + SenseObstacles(), -1f, 1f);
 
             car.SetInputs(throttle, brake, steering);
             CheckStuck();
