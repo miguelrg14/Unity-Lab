@@ -1,0 +1,21 @@
+{
+    "name": "UnityLab.SmokeTest",
+    "rootNamespace": "UnityLab.SmokeTest",
+    "references": [
+        "UnityLab.Shared",
+        "UnityLab.Menu",
+        "UnityLab.Racing",
+        "UnityLab.Racing.Core",
+        "UnityLab.RTS",
+        "UnityLab.RTS.Core"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
