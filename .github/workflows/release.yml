@@ -1,0 +1,117 @@
+# Publishes a GitHub release when a version tag is pushed:  git tag v1.0.0 && git push origin v1.0.0
+# It contains the game for Windows and Linux, the WebGL build and the race server for Windows
+# and Linux (self-contained, no .NET install needed).
+# Running it by hand (Actions > Release > Run workflow) builds everything without publishing.
+
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  PROJECT_PATH: UnityProject
+
+jobs:
+  game:
+    name: Game ${{ matrix.targetPlatform }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        targetPlatform: [StandaloneWindows64, StandaloneLinux64, WebGL]
+    steps:
+      - uses: jlumbroso/free-disk-space@v1.3.1
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: false
+      - name: Add swap space
+        if: matrix.targetPlatform == 'WebGL'
+        run: |
+          sudo swapoff -a
+          sudo rm -f /mnt/swapfile
+          sudo fallocate -l 12G /mnt/swapfile
+          sudo chmod 600 /mnt/swapfile
+          sudo mkswap /mnt/swapfile
+          sudo swapon /mnt/swapfile
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/cache@v4
+        with:
+          path: ${{ env.PROJECT_PATH }}/Library
+          key: Library-${{ matrix.targetPlatform }}-${{ hashFiles('UnityProject/Assets/**', 'UnityProject/Packages/**', 'UnityProject/ProjectSettings/**') }}
+          restore-keys: Library-${{ matrix.targetPlatform }}-
+      - uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: ${{ env.PROJECT_PATH }}
+          targetPlatform: ${{ matrix.targetPlatform }}
+          buildName: UnityLab
+          versioning: ${{ startsWith(github.ref, 'refs/tags/') && 'Tag' || 'None' }}
+      - name: Zip
+        run: |
+          sudo chown -R "$(id -u):$(id -g)" build
+          cd build/${{ matrix.targetPlatform }}
+          zip -qr "$GITHUB_WORKSPACE/UnityLab-${{ matrix.targetPlatform }}.zip" .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: game-${{ matrix.targetPlatform }}
+          path: UnityLab-${{ matrix.targetPlatform }}.zip
+
+  server:
+    name: Server ${{ matrix.rid }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rid: [win-x64, linux-x64]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Publish
+        run: >
+          dotnet publish Server/src/RaceServer/RaceServer.csproj -c Release -r ${{ matrix.rid }}
+          --self-contained -p:PublishSingleFile=true -o out/RaceServer-${{ matrix.rid }}
+      - name: Zip
+        run: cd out && zip -qr "$GITHUB_WORKSPACE/RaceServer-${{ matrix.rid }}.zip" RaceServer-${{ matrix.rid }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: server-${{ matrix.rid }}
+          path: RaceServer-${{ matrix.rid }}.zip
+
+  publish:
+    name: Publish release
+    needs: [game, server]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.zip
+          generate_release_notes: true
+          body: |
+            **Play in the browser:** https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+
+            | File | What it is |
+            |---|---|
+            | `UnityLab-StandaloneWindows64.zip` | Game for Windows (run `UnityLab.exe`) |
+            | `UnityLab-StandaloneLinux64.zip` | Game for Linux (run `UnityLab`) |
+            | `UnityLab-WebGL.zip` | Browser build (serve the folder with any static web server) |
+            | `RaceServer-win-x64.zip` | Race server for online races, Windows (run `RaceServer.exe`) |
+            | `RaceServer-linux-x64.zip` | Race server for online races, Linux (run `./RaceServer`) |

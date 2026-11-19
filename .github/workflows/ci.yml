@@ -1,0 +1,239 @@
+# Continuous integration.
+#   .NET       builds the server and runs the protocol, gameplay-rule and server tests
+#   Docker     starts the server with Docker Compose and talks to it with real clients
+#   Unity      EditMode + PlayMode tests, then Linux and WebGL builds
+#   Smoke      plays the Linux build headless (racing, RTS and an online race between two
+#              game instances and the real server) and keeps the screenshots
+#   Pages      publishes the WebGL build (pushes to main only)
+#
+# Required repository secrets (Settings > Secrets and variables > Actions):
+#   UNITY_LICENSE, UNITY_EMAIL, UNITY_PASSWORD  (see https://game.ci/docs/github/activation)
+# GitHub Pages must be set to "Source: GitHub Actions" (Settings > Pages).
+
+name: CI
+
+on:
+  push:
+    branches: [main, portfolio-refresh]
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+      - ".github/migrate.trigger"
+      - ".github/workflows/migrate.yml"
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PROJECT_PATH: UnityProject
+  DOTNET_VERSION: 8.0.x
+
+jobs:
+  dotnet:
+    name: .NET tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Build
+        run: dotnet build Server/UnityLab.sln -c Release
+      - name: Test
+        run: >
+          dotnet test Server/UnityLab.sln -c Release --no-build
+          --logger "trx" --logger "console;verbosity=normal" --results-directory TestResults
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dotnet-test-results
+          path: TestResults
+
+  docker:
+    name: Server in Docker
+    needs: dotnet
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Start the server with Docker Compose
+        run: docker compose up -d --build
+      - name: Join, race and leave with real clients
+        run: dotnet run --project Server/src/RaceSmokeTest -c Release -- 127.0.0.1 7777
+      - name: Server log
+        if: always()
+        run: docker compose logs
+      - name: Stop
+        if: always()
+        run: docker compose down
+
+  unity-tests:
+    name: Unity tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+    steps:
+      - uses: jlumbroso/free-disk-space@v1.3.1
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: false
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: ${{ env.PROJECT_PATH }}/Library
+          key: Library-test-${{ hashFiles('UnityProject/Assets/**', 'UnityProject/Packages/**', 'UnityProject/ProjectSettings/**') }}
+          restore-keys: Library-test-
+      - uses: game-ci/unity-test-runner@v4
+        id: tests
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: ${{ env.PROJECT_PATH }}
+          testMode: all
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          checkName: Unity test results
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unity-test-results
+          path: ${{ steps.tests.outputs.artifactsPath }}
+
+  unity-build:
+    name: Build ${{ matrix.targetPlatform }}
+    needs: unity-tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        targetPlatform: [StandaloneLinux64, WebGL]
+    steps:
+      - uses: jlumbroso/free-disk-space@v1.3.1
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: false
+      # Linking the web player can exceed the runner's RAM (exit code 137) without extra swap.
+      - name: Add swap space
+        if: matrix.targetPlatform == 'WebGL'
+        run: |
+          sudo swapoff -a
+          sudo rm -f /mnt/swapfile
+          sudo fallocate -l 12G /mnt/swapfile
+          sudo chmod 600 /mnt/swapfile
+          sudo mkswap /mnt/swapfile
+          sudo swapon /mnt/swapfile
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: ${{ env.PROJECT_PATH }}/Library
+          key: Library-${{ matrix.targetPlatform }}-${{ hashFiles('UnityProject/Assets/**', 'UnityProject/Packages/**', 'UnityProject/ProjectSettings/**') }}
+          restore-keys: Library-${{ matrix.targetPlatform }}-
+      - uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: ${{ env.PROJECT_PATH }}
+          targetPlatform: ${{ matrix.targetPlatform }}
+          buildName: UnityLab
+          versioning: None
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.targetPlatform }}
+          path: build/${{ matrix.targetPlatform }}
+          retention-days: 7
+
+  smoke-test:
+    name: Smoke test (Linux build)
+    needs: [unity-build, dotnet]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: build-StandaloneLinux64
+          path: game
+      - name: Install a virtual display
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb libgl1-mesa-dri libglu1-mesa
+          chmod +x game/UnityLab
+          mkdir -p smoke-output
+      - name: Start the race server
+        run: |
+          dotnet build Server/src/RaceServer -c Release
+          nohup dotnet Server/src/RaceServer/bin/Release/net8.0/RaceServer.dll --port 7777 > server.log 2>&1 &
+      - name: Play the menu, a race and an RTS skirmish
+        run: |
+          xvfb-run -a -s "-screen 0 1600x900x24" game/UnityLab \
+            -force-glcore -screen-fullscreen 0 -screen-width 1600 -screen-height 900 \
+            -logFile smoke-output/player.log -smoke-test smoke-output/single
+      - name: Online race between two game instances
+        run: |
+          run_instance() {
+            xvfb-run -a -s "-screen 0 1600x900x24" game/UnityLab \
+              -force-glcore -screen-fullscreen 0 -screen-width 1600 -screen-height 900 \
+              -logFile smoke-output/online-$1.log -smoke-test smoke-output/online-$1 \
+              -smoke-only online -smoke-server 127.0.0.1:7777 -smoke-expect-remote 1
+          }
+          run_instance a & first=$!
+          sleep 2
+          run_instance b & second=$!
+          wait $first; a=$?
+          wait $second; b=$?
+          echo "instance a: $a, instance b: $b"
+          test $a -eq 0 && test $b -eq 0
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "## Smoke test"
+            for f in smoke-output/*/smoke-results.txt; do echo "### ${f%/smoke-results.txt}"; echo '```'; cat "$f"; echo '```'; done
+            echo "### Server log"; echo '```'; cat server.log; echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke-test-output
+          path: |
+            smoke-output
+            server.log
+
+  pages:
+    name: Deploy WebGL to GitHub Pages
+    needs: [unity-build, smoke-test]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: build-WebGL
+          path: webgl
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: webgl/UnityLab
+      - uses: actions/deploy-pages@v4
+        id: deployment
