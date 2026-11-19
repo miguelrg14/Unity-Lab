@@ -184,7 +184,18 @@ namespace UnityLab.RTS.Units
             return (enemy.transform.position - transform.position).sqrMagnitude <= reach * reach;
         }
 
-        bool HasArrived() => !Agent.pathPending && Agent.hasPath && Agent.remainingDistance <= Agent.stoppingDistance + arrivalThreshold;
+        /// <summary>
+        /// The agent drops its path once it reaches the stopping distance, so "no path and not
+        /// moving" also counts as arrived; a destination it cannot get closer to ends the order too.
+        /// </summary>
+        bool HasArrived()
+        {
+            if (Agent.pathPending)
+                return false;
+            if (Agent.hasPath)
+                return Agent.remainingDistance <= Agent.stoppingDistance + arrivalThreshold;
+            return Agent.velocity.sqrMagnitude < 0.01f;
+        }
 
         protected static bool IsValidTarget(Unit unit) => unit != null && unit.IsAlive;
 
