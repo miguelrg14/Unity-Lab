@@ -1,0 +1,8 @@
+Unity Lab race server - press Ctrl+C to stop.
+[23:34:37] Listening on 0.0.0.0:7777 (max 4 players).
+[23:35:41] Connection from 127.0.0.1:59984.
+[23:35:41] Smoke 467 joined as player 0 in slot 0.
+[23:35:43] Connection from 127.0.0.1:59996.
+[23:35:43] Smoke 490 joined as player 1 in slot 1.
+[23:35:50] Smoke 467 (#0) (127.0.0.1:59984) left: disconnected.
+[23:35:50] Smoke 490 (#1) (127.0.0.1:59996) left: disconnected.

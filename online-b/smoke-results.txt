@@ -1,0 +1,6 @@
+Smoke test started: steps online, resolution 1600x900
+PASS  Online scene loads
+PASS  Connects to the race server
+PASS  Sees 1 other player(s) (1)
+Screenshot 06-online-1
+SMOKE TEST PASSED

@@ -1,0 +1,25 @@
+Smoke test started: steps menu,racing,rts, resolution 1600x900
+Screenshot 01-main-menu
+PASS  Main menu loads
+PASS  Racing scene loads with a circuit
+Screenshot 02-racing-start
+Standings: 1. Blue wp=1 next=1 at (-60, 1, 5); 2. Green wp=1 next=1 at (-60, 1, -6); 3. Yellow wp=0 next=0 at (-61, 1, -20); 4. Player wp=0 next=0 at (-57, 1, -35);
+Standings: 1. Blue wp=2 next=2 at (-60, 1, 25); 2. Green wp=1 next=1 at (-60, 1, 15); 3. Yellow wp=1 next=1 at (-60, 1, 4); 4. Player wp=0 next=0 at (-60, 1, -8);
+Standings: 1. Blue wp=2 next=2 at (-60, 1, 50); 2. Green wp=2 next=2 at (-60, 1, 39); 3. Yellow wp=2 next=2 at (-60, 1, 28); 4. Player wp=2 next=2 at (-60, 1, 22);
+Standings: 1. Blue wp=3 next=3 at (-60, 1, 81); 2. Green wp=3 next=3 at (-60, 1, 70); 3. Yellow wp=3 next=3 at (-60, 1, 60); 4. Player wp=3 next=3 at (-60, 1, 56);
+Standings: 1. Blue wp=4 next=4 at (-58, 1, 113); 2. Green wp=4 next=4 at (-59, 1, 104); 3. Yellow wp=4 next=4 at (-59, 1, 98); 4. Player wp=4 next=4 at (-60, 1, 94);
+Standings: 1. Blue wp=5 next=5 at (-48, 1, 141); 2. Green wp=5 next=5 at (-52, 1, 137); 3. Yellow wp=5 next=5 at (-54, 1, 133); 4. Player wp=5 next=5 at (-56, 1, 129);
+Screenshot 03-racing
+PASS  Four competitors race (4 found)
+PASS  Blue drives through the waypoints (5 passed)
+PASS  Green drives through the waypoints (5 passed)
+PASS  Yellow drives through the waypoints (5 passed)
+PASS  Player drives through the waypoints (5 passed)
+PASS  RTS scene has two armies
+Screenshot 04-rts-units
+Screenshot 05-rts-battle
+PASS  Army 0 trains units
+PASS  Army 1 trains units
+PASS  Harvesters go to work
+PASS  Units fight and die (2 of 10 died)
+SMOKE TEST PASSED
