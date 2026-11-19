@@ -80,16 +80,21 @@ namespace UnityLab.Tests.PlayMode
             ArmyController player = Army(true);
             Unit unit = player.Train(player.MainBase, UnitKind.Melee);
             yield return null;
-            Vector3 start = unit.transform.position;
-            Vector3 target = start + (Army(false).MainBase.transform.position - start).normalized * 6f;
+            // Open ground halfway between the two bases.
+            Vector3 target = (player.MainBase.transform.position + Army(false).MainBase.transform.position) * 0.5f;
 
             unit.OrderMove(target);
             Time.timeScale = 3f;
-            yield return new WaitForSeconds(6f);
+            float deadline = Time.time + 30f;
+            while (unit.State != Unit.UnitState.Idle && Time.time < deadline)
+                yield return null;
 
+            string details = $"state {unit.State}, distance {Vector3.Distance(Flat(unit.transform.position), Flat(target)):0.00}, " +
+                $"hasPath {unit.Agent.hasPath}, remaining {unit.Agent.remainingDistance:0.00}, velocity {unit.Agent.velocity.magnitude:0.00}, " +
+                $"path {unit.Agent.pathStatus}, stopping {unit.Agent.stoppingDistance}";
+            Assert.That(unit.State, Is.EqualTo(Unit.UnitState.Idle), details);
             // The agent stops within its stopping distance plus the arrival threshold.
-            Assert.That(Vector3.Distance(Flat(unit.transform.position), Flat(target)), Is.LessThan(2.5f));
-            Assert.That(unit.State, Is.EqualTo(Unit.UnitState.Idle));
+            Assert.That(Vector3.Distance(Flat(unit.transform.position), Flat(target)), Is.LessThan(2.5f), details);
         }
 
         [UnityTest]
