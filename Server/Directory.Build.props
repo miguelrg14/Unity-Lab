@@ -1,0 +1,11 @@
+<Project>
+  <!-- Shared settings for every .NET project in this folder. -->
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Path to the Unity project, whose engine-free sources these projects compile. -->
+    <UnitySources>$(MSBuildThisFileDirectory)../UnityProject/Assets/_Project/</UnitySources>
+  </PropertyGroup>
+</Project>

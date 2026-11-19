@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Engine-free gameplay rules of the Racing and RTS demos, compiled outside Unity for fast tests. -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(UnitySources)Racing/Scripts/Core/**/*.cs" Link="Racing/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="$(UnitySources)RTS/Scripts/Core/**/*.cs" Link="RTS/%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>

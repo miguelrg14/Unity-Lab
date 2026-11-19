@@ -1,0 +1,8 @@
+# Only the server and the protocol sources are needed to build the image.
+**
+!Server/Directory.Build.props
+!Server/src/UnityLab.Protocol/**
+!Server/src/RaceServer/**
+!UnityProject/Assets/_Project/Racing/Scripts/Protocol/**
+**/bin
+**/obj

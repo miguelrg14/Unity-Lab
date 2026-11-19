@@ -1,0 +1,14 @@
+# Starts the race server for online races: docker compose up
+# Then open the game, choose "Racing - Online" and connect to this machine's IP on port 7777.
+services:
+  race-server:
+    build:
+      context: .
+      dockerfile: Server/Dockerfile
+    image: unity-lab-race-server
+    ports:
+      - "7777:7777"
+    environment:
+      RACE_SERVER_PORT: "7777"
+      RACE_SERVER_MAX_PLAYERS: "4"
+    restart: unless-stopped

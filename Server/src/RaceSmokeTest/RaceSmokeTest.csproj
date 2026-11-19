@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Connects real clients to a running race server and checks the full join/relay/leave cycle. Used by CI against the Docker container. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../UnityLab.Protocol/UnityLab.Protocol.csproj" />
+  </ItemGroup>
+</Project>

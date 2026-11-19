@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    The network protocol shared by the Unity client and the race server.
+    The source lives in the Unity project and is compiled here as well, so both ends always
+    speak exactly the same format. netstandard2.1 matches what Unity supports.
+  -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <RootNamespace>UnityLab.Racing.Protocol</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(UnitySources)Racing/Scripts/Protocol/**/*.cs" Link="Protocol/%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>
