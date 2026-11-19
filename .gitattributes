@@ -1,0 +1,19 @@
+* text=auto eol=lf
+
+# Unity YAML: merge as text, never line-ending converted by tools that do not understand it.
+*.unity     text eol=lf linguist-generated
+*.prefab    text eol=lf linguist-generated
+*.asset     text eol=lf linguist-generated
+*.mat       text eol=lf linguist-generated
+*.meta      text eol=lf linguist-generated
+*.controller text eol=lf linguist-generated
+*.anim      text eol=lf linguist-generated
+
+# Binary assets
+*.png  binary
+*.jpg  binary
+*.fbx  binary
+*.wav  binary
+*.ttf  binary
+*.otf  binary
+*.psd  binary
