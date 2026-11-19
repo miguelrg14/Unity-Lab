@@ -1,0 +1,29 @@
+{
+    "name": "UnityLab.Tests.PlayMode",
+    "rootNamespace": "UnityLab.Tests.PlayMode",
+    "references": [
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner",
+        "UnityLab.Shared",
+        "UnityLab.Racing",
+        "UnityLab.Racing.Core",
+        "UnityLab.Racing.Protocol",
+        "UnityLab.RTS",
+        "UnityLab.RTS.Core",
+        "Unity.TextMeshPro",
+        "UnityEngine.UI"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

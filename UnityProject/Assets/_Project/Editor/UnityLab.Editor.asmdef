@@ -1,0 +1,23 @@
+{
+    "name": "UnityLab.Editor",
+    "rootNamespace": "UnityLab.EditorTools",
+    "references": [
+        "UnityLab.Shared",
+        "UnityLab.Menu",
+        "UnityLab.Racing",
+        "UnityLab.RTS",
+        "UnityLab.RTS.Core",
+        "Unity.AI.Navigation"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
