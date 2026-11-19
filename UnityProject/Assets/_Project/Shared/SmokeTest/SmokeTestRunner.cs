@@ -147,12 +147,27 @@ namespace UnityLab.SmokeTest
                     break;
                 yield return new WaitForSeconds(0.5f);
             }
+            FrameUnits();
+            yield return new WaitForSeconds(0.5f);
             yield return Screenshot("05-rts-battle");
 
             foreach (ArmyController army in armies)
                 Check(teamsWithUnits.Contains(army.Team.TeamNumber), $"Army {army.Team.TeamNumber} trains units");
             Check(harvesting, "Harvesters go to work");
             Check(seen.Count(u => u == null) > 0, $"Units fight and die ({seen.Count(u => u == null)} of {seen.Count} died)");
+        }
+
+        /// <summary>Moves the RTS camera over the middle of the living units, where the fighting is.</summary>
+        static void FrameUnits()
+        {
+            Camera camera = Camera.main;
+            Unit[] alive = FindObjectsByType<Unit>().Where(u => u.IsAlive).ToArray();
+            if (camera == null || alive.Length == 0)
+                return;
+            Vector3 centre = alive.Aggregate(Vector3.zero, (sum, u) => sum + u.transform.position) / alive.Length;
+            // Keep the camera's height and pitch; shift it so it looks at the centre.
+            float back = camera.transform.position.y / Mathf.Tan(camera.transform.eulerAngles.x * Mathf.Deg2Rad);
+            camera.transform.position = new Vector3(centre.x, camera.transform.position.y, centre.z - back);
         }
 
         IEnumerator OnlineStep()

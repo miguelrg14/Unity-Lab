@@ -49,7 +49,8 @@ namespace UnityLab.RTS.Cameras
             float speed = panSpeed * (Input.GetKey(KeyCode.LeftShift) ? fastPanMultiplier : 1f);
             Vector3 mouse = Input.mousePosition;
             bool mouseInside = mouse.x >= 0 && mouse.y >= 0 && mouse.x <= Screen.width && mouse.y <= Screen.height;
-            bool edgePan = hasFocus && mouseInside && (!Application.isEditor || edgePanInEditor);
+            // No edge panning during automated runs, where nobody is moving the mouse.
+            bool edgePan = hasFocus && mouseInside && !Shared.GameSession.Autopilot && (!Application.isEditor || edgePanInEditor);
 
             Vector3 move = Vector3.zero;
             if (Input.GetKey(KeyCode.UpArrow) || (edgePan && mouse.y >= Screen.height * (1f - edgeSize)))
