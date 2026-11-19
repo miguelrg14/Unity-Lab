@@ -29,7 +29,12 @@ namespace UnityLab.Racing.Race
         /// <summary>The car the person at this computer is driving.</summary>
         public bool IsLocalPlayer { get; set; }
 
-        void Awake() => IsLocalPlayer = TryGetComponent(out Cars.PlayerCarInput _);
+        void Awake()
+        {
+            IsLocalPlayer = TryGetComponent(out Cars.PlayerCarInput _);
+            if (IsLocalPlayer)
+                nickname = Shared.GameSession.Nickname;
+        }
 
         void Start()
         {

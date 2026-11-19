@@ -39,6 +39,17 @@ namespace UnityLab.Tests.Editor
             Object.DestroyImmediate(mesh);
         }
 
+        [Test]
+        public void Ring_StandsAcrossItsThinAxis_AndStaysRound()
+        {
+            var gate = new Bounds(Vector3.zero, new Vector3(10f, 10f, 0.5f));
+            Mesh mesh = ProceduralMeshes.Build(ProceduralMeshes.Kind.Ring, gate, "Ring");
+            Assert.That(mesh.bounds.size.x, Is.EqualTo(10f).Within(0.05f));
+            Assert.That(mesh.bounds.size.y, Is.EqualTo(10f).Within(0.05f));
+            Assert.That(mesh.bounds.size.z, Is.LessThan(1f), "Thin along Z, so cars drive through it.");
+            Object.DestroyImmediate(mesh);
+        }
+
         [TestCase("SM_PolygonCity_Veh_Car_Small_01", ProceduralMeshes.Kind.CarBody)]
         [TestCase("SM_Veh_Car_Small_Wheel_fl", ProceduralMeshes.Kind.Wheel)]
         [TestCase("SM_Bean_Cop_01", ProceduralMeshes.Kind.Pawn)]

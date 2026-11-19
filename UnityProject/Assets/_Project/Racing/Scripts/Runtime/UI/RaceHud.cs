@@ -103,8 +103,16 @@ namespace UnityLab.Racing.UI
                     continue;
 
                 Competitor competitor = circuit.Standings[i];
-                SetText(row.GetChild(0).GetComponent<TMP_Text>(), competitor.Nickname);
-                SetText(row.GetChild(1).GetComponent<TMP_Text>(), RaceStandings.Ordinal(i + 1));
+                TMP_Text nameText = row.GetChild(0).GetComponent<TMP_Text>();
+                TMP_Text placeText = row.GetChild(1).GetComponent<TMP_Text>();
+                SetText(nameText, competitor.Nickname);
+                SetText(placeText, RaceStandings.Ordinal(i + 1));
+                // The player's own row stands out.
+                Color color = competitor.IsLocalPlayer ? UiTheme.Accent : Color.white;
+                if (nameText != null)
+                    nameText.color = color;
+                if (placeText != null)
+                    placeText.color = color;
             }
         }
 

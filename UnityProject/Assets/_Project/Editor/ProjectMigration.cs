@@ -64,6 +64,74 @@ namespace UnityLab.EditorTools
             }
         }
 
+        /// <summary>Entry point for the follow-up step: <c>-executeMethod UnityLab.EditorTools.ProjectMigration.RunFollowUpFromCommandLine</c>.</summary>
+        public static void RunFollowUpFromCommandLine()
+        {
+            try
+            {
+                FollowUp();
+                File.WriteAllLines("migration-report.txt", report);
+                EditorApplication.Exit(0);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+                File.WriteAllLines("migration-report.txt", report.Append("FAILED: " + exception));
+                EditorApplication.Exit(1);
+            }
+        }
+
+        /// <summary>
+        /// Second pass, after the first smoke test: the gate ring had been fitted lying on its side
+        /// (a solid bar across the track that stopped every car), so it is rebuilt as an upright,
+        /// collider-free hoop; the AI cars also get readable names.
+        /// </summary>
+        [MenuItem("Unity Lab/Maintenance/Run migration follow-up")]
+        public static void FollowUp()
+        {
+            report.Clear();
+            const string ringPath = GeneratedMeshes + "/Ring_10.asset";
+            var ring = AssetDatabase.LoadAssetAtPath<Mesh>(ringPath);
+            if (ring == null)
+                throw new InvalidOperationException("Missing " + ringPath);
+
+            // The original hoop was 8.69 m in radius and 0.35 m thick, upright and facing +Z.
+            Mesh rebuilt = ProceduralMeshes.Build(Kind.Ring, new Bounds(Vector3.zero, new Vector3(17.38f, 17.38f, 0.695f)), ring.name);
+            ring.Clear();
+            EditorUtility.CopySerialized(rebuilt, ring);
+            Object.DestroyImmediate(rebuilt);
+            EditorUtility.SetDirty(ring);
+            AssetDatabase.SaveAssets();
+            Log($"Rebuilt {ringPath} as an upright hoop ({ring.bounds.size}).");
+
+            var names = new Dictionary<string, string> { { "Car_AI_1", "Blue" }, { "Car_AI_2", "Green" }, { "Car_AI_3", "Yellow" } };
+            foreach (string path in new[] { SinglePlayerScene, OnlineScene })
+            {
+                Scene scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
+                int colliders = 0, renamed = 0;
+                foreach (MeshCollider collider in Object.FindObjectsByType<MeshCollider>(FindObjectsInactive.Include))
+                {
+                    if (collider.sharedMesh == ring)
+                    {
+                        Object.DestroyImmediate(collider);
+                        colliders++;
+                    }
+                }
+                foreach (Competitor competitor in Object.FindObjectsByType<Competitor>(FindObjectsInactive.Include))
+                {
+                    if (names.TryGetValue(competitor.name, out string nickname))
+                    {
+                        competitor.Nickname = nickname;
+                        EditorUtility.SetDirty(competitor);
+                        renamed++;
+                    }
+                }
+                EditorSceneManager.MarkSceneDirty(scene);
+                EditorSceneManager.SaveScene(scene);
+                Log($"{path}: removed {colliders} ring colliders, named {renamed} AI cars.");
+            }
+        }
+
         [MenuItem("Unity Lab/Maintenance/Run project migration")]
         public static void Run()
         {

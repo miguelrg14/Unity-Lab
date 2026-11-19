@@ -48,18 +48,26 @@ namespace UnityLab.EditorTools
             switch (kind)
             {
                 case Kind.CarBody: CarBody(builder); break;
-                case Kind.Wheel: builder.Cylinder(Vector3.zero, Vector3.right, 0.5f, 0.5f, 18); break;
+                case Kind.Wheel: builder.Cylinder(Vector3.zero, ThinAxis(target), 0.5f, 0.5f, 18); break;
                 case Kind.Pawn: Pawn(builder); break;
                 case Kind.House: House(builder); break;
                 case Kind.Tree: Tree(builder); break;
                 case Kind.Stump: builder.Cylinder(new Vector3(0, 0.25f, 0), Vector3.up, 0.5f, 0.5f, 10); break;
                 case Kind.Rock: Rock(builder); break;
-                case Kind.Ring: builder.Torus(1f, 0.08f, 32, 8); break;
+                case Kind.Ring: builder.Torus(1f, 0.08f, 32, 8, ThinAxis(target)); break;
                 default: builder.Box(Vector3.zero, Vector3.one); break;
             }
             Mesh mesh = builder.ToMesh(name);
-            FitTo(mesh, target, kind == Kind.Wheel || kind == Kind.Ring);
+            FitTo(mesh, target, kind == Kind.Wheel || kind == Kind.Ring ? ThinAxis(target) : Vector3.zero);
             return mesh;
+        }
+
+        /// <summary>The axis along which the bounds are thinnest: a wheel's axle, a hoop's normal.</summary>
+        public static Vector3 ThinAxis(Bounds bounds)
+        {
+            Vector3 size = bounds.size;
+            if (size.x <= size.y && size.x <= size.z) return Vector3.right;
+            return size.y <= size.z ? Vector3.up : Vector3.forward;
         }
 
         static void CarBody(Builder b)
@@ -101,21 +109,23 @@ namespace UnityLab.EditorTools
             b.Sphere(Vector3.zero, 1f, 9, 5, () => 0.8f + 0.35f * (float)random.NextDouble());
         }
 
-        /// <summary>Scales and moves the mesh so its bounds match <paramref name="target"/>.</summary>
-        static void FitTo(Mesh mesh, Bounds target, bool keepRound)
+        /// <summary>
+        /// Scales and moves the mesh so its bounds match <paramref name="target"/>. Round shapes
+        /// (wheels, hoops) pass their axis so the two axes across it share one scale and stay circular.
+        /// </summary>
+        static void FitTo(Mesh mesh, Bounds target, Vector3 roundAxis)
         {
             Bounds source = mesh.bounds;
             Vector3 scale = new Vector3(
                 SafeRatio(target.size.x, source.size.x),
                 SafeRatio(target.size.y, source.size.y),
                 SafeRatio(target.size.z, source.size.z));
-            if (keepRound)
-            {
-                // Wheels and rings must stay circular: use the same scale on the two round axes.
-                float round = Mathf.Min(scale.y, scale.z);
-                scale.y = round;
-                scale.z = round;
-            }
+            if (roundAxis == Vector3.right)
+                scale.y = scale.z = Mathf.Min(scale.y, scale.z);
+            else if (roundAxis == Vector3.up)
+                scale.x = scale.z = Mathf.Min(scale.x, scale.z);
+            else if (roundAxis == Vector3.forward)
+                scale.x = scale.y = Mathf.Min(scale.x, scale.y);
 
             Vector3[] vertices = mesh.vertices;
             for (int i = 0; i < vertices.Length; i++)
@@ -285,21 +295,23 @@ namespace UnityLab.EditorTools
                 Orient(first, _ => center);
             }
 
-            public void Torus(float majorRadius, float minorRadius, int segments, int sides)
+            /// <summary>Ring around <paramref name="axis"/> (the direction you look through it).</summary>
+            public void Torus(float majorRadius, float minorRadius, int segments, int sides, Vector3 axis)
             {
+                Quaternion rotation = Quaternion.FromToRotation(Vector3.right, axis);
                 Vector3 Point(int i, int j)
                 {
                     float u = Mathf.PI * 2f * i / segments;
                     float v = Mathf.PI * 2f * j / sides;
                     float d = majorRadius + minorRadius * Mathf.Cos(v);
-                    return new Vector3(0f, d * Mathf.Sin(u), d * Mathf.Cos(u)) + Vector3.right * (minorRadius * Mathf.Sin(v));
+                    return rotation * (new Vector3(0f, d * Mathf.Sin(u), d * Mathf.Cos(u)) + Vector3.right * (minorRadius * Mathf.Sin(v)));
                 }
                 int first = vertices.Count;
                 for (int i = 0; i < segments; i++)
                     for (int j = 0; j < sides; j++)
                         Quad(Point(i, j), Point(i + 1, j), Point(i + 1, j + 1), Point(i, j + 1));
                 // Each face points away from the centre line of the tube.
-                Orient(first, p => new Vector3(0f, p.y, p.z).normalized * majorRadius);
+                Orient(first, p => Vector3.ProjectOnPlane(p, axis).normalized * majorRadius);
             }
 
             public Mesh ToMesh(string name)

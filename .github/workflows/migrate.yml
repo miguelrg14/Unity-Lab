@@ -33,7 +33,7 @@ jobs:
         with:
           projectPath: UnityProject
           targetPlatform: StandaloneLinux64
-          buildMethod: UnityLab.EditorTools.ProjectMigration.RunFromCommandLine
+          buildMethod: UnityLab.EditorTools.ProjectMigration.RunFollowUpFromCommandLine
           versioning: None
           allowDirtyBuild: true
 
