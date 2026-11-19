@@ -26,7 +26,7 @@ namespace UnityLab.RTS.UI
 
         void Start()
         {
-            foreach (ArmyController army in FindObjectsByType<ArmyController>(FindObjectsSortMode.None))
+            foreach (ArmyController army in FindObjectsByType<ArmyController>())
             {
                 if (army.PlayerControlled && player == null)
                     player = army;

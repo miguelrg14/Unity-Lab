@@ -65,7 +65,7 @@ namespace UnityLab.Tests.PlayMode
         public IEnumerator Car_ResetPutsItBackUprightOnTheTrack()
         {
             yield return Load(Scenes.RacingSinglePlayer);
-            CarController car = Object.FindObjectsByType<CarController>(FindObjectsSortMode.None).First(c => c.GetComponent<PlayerCarInput>() != null);
+            CarController car = Object.FindObjectsByType<CarController>().First(c => c.GetComponent<PlayerCarInput>() != null);
 
             car.transform.rotation = Quaternion.Euler(0f, 0f, 180f);
             car.ResetCar();

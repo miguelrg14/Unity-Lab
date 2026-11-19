@@ -18,7 +18,7 @@ namespace UnityLab.Tests.PlayMode
             yield return SceneManager.LoadSceneAsync(Scenes.MainMenu);
             yield return null;
 
-            string[] labels = Object.FindObjectsByType<Button>(FindObjectsSortMode.None)
+            string[] labels = Object.FindObjectsByType<Button>()
                 .Select(b => b.GetComponentInChildren<TMP_Text>().text)
                 .ToArray();
             Assert.That(labels, Does.Contain("Race"));
@@ -32,7 +32,7 @@ namespace UnityLab.Tests.PlayMode
             yield return SceneManager.LoadSceneAsync(Scenes.MainMenu);
             yield return null;
 
-            Button play = Object.FindObjectsByType<Button>(FindObjectsSortMode.None)
+            Button play = Object.FindObjectsByType<Button>()
                 .First(b => b.GetComponentInChildren<TMP_Text>().text == "Play");
             play.onClick.Invoke();
             yield return null;

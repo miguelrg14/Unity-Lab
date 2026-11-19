@@ -28,7 +28,7 @@ namespace UnityLab.Tests.PlayMode
         }
 
         static ArmyController Army(bool player) =>
-            Object.FindObjectsByType<ArmyController>(FindObjectsSortMode.None).First(a => a.PlayerControlled == player);
+            Object.FindObjectsByType<ArmyController>().First(a => a.PlayerControlled == player);
 
         [UnityTest]
         public IEnumerator Battlefield_HasAPlayerArmyAndAnAiArmy()
@@ -138,7 +138,7 @@ namespace UnityLab.Tests.PlayMode
             float deadline = Time.time + 150f;
             while (Time.time < deadline)
             {
-                foreach (Unit unit in Object.FindObjectsByType<Unit>(FindObjectsSortMode.None))
+                foreach (Unit unit in Object.FindObjectsByType<Unit>())
                     seen.Add(unit);
                 foreach (Unit unit in seen)
                 {

@@ -30,12 +30,12 @@ namespace UnityLab.RTS.Army
 
         void Start()
         {
-            foreach (ArmyController other in FindObjectsByType<ArmyController>(FindObjectsSortMode.None))
+            foreach (ArmyController other in FindObjectsByType<ArmyController>())
             {
                 if (other != army)
                     enemy = other;
             }
-            resources = FindObjectsByType<ResourceNode>(FindObjectsSortMode.None);
+            resources = FindObjectsByType<ResourceNode>();
             nextDecision = Time.time + 0.5f;
         }
 

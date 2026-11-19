@@ -355,6 +355,19 @@ namespace UnityLab.EditorTools
         {
             GameObject[] roots = scene.GetRootGameObjects();
             int unpacked = UnpackThirdPartyInstances(roots);
+            // The sky dome model is replaced by the default procedural skybox.
+            int removedSky = 0;
+            foreach (GameObject root in scene.GetRootGameObjects())
+            {
+                foreach (Transform t in root.GetComponentsInChildren<Transform>(true).Reverse())
+                {
+                    if (t != null && t.name.Contains("SimpleSky"))
+                    {
+                        Object.DestroyImmediate(t.gameObject);
+                        removedSky++;
+                    }
+                }
+            }
             int replaced = 0, missing = 0;
             foreach (GameObject root in scene.GetRootGameObjects())
             {
@@ -385,19 +398,6 @@ namespace UnityLab.EditorTools
                 }
             }
 
-            // The sky dome model is replaced by the default procedural skybox.
-            int removedSky = 0;
-            foreach (GameObject root in scene.GetRootGameObjects())
-            {
-                foreach (Transform t in root.GetComponentsInChildren<Transform>(true).Reverse())
-                {
-                    if (t != null && t.name.Contains("SimpleSky"))
-                    {
-                        Object.DestroyImmediate(t.gameObject);
-                        removedSky++;
-                    }
-                }
-            }
             Log($"Scene {scene.path}: unpacked {unpacked}, replaced {replaced}, removed {missing} missing scripts, renamed {renamed}, removed {removedSky} sky domes.");
         }
 
@@ -423,7 +423,7 @@ namespace UnityLab.EditorTools
             // Each car gets its own colour: red for the player, blue/green/yellow for the AI.
             string[] aiColours = { "CarAI1", "CarAI2", "CarAI3" };
             int ai = 0;
-            foreach (CarController car in Object.FindObjectsByType<CarController>(FindObjectsInactive.Include, FindObjectsSortMode.InstanceID).OrderBy(c => c.name))
+            foreach (CarController car in Object.FindObjectsByType<CarController>(FindObjectsInactive.Include).OrderBy(c => c.name))
             {
                 bool player = car.GetComponent<PlayerCarInput>() != null;
                 PaintCar(car.gameObject, materials[player ? "CarPlayer" : aiColours[ai++ % aiColours.Length]]);
@@ -457,13 +457,13 @@ namespace UnityLab.EditorTools
 
             // Online races have only human players.
             int removed = 0;
-            foreach (AICarDriver driver in Object.FindObjectsByType<AICarDriver>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (AICarDriver driver in Object.FindObjectsByType<AICarDriver>(FindObjectsInactive.Include))
             {
                 Object.DestroyImmediate(driver.gameObject);
                 removed++;
             }
 
-            Competitor player = Object.FindObjectsByType<Competitor>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+            Competitor player = Object.FindObjectsByType<Competitor>(FindObjectsInactive.Include)
                 .First(c => c.GetComponent<PlayerCarInput>() != null);
             CircuitManager circuit = Object.FindAnyObjectByType<CircuitManager>(FindObjectsInactive.Include);
             var remotePrefab = AssetDatabase.LoadAssetAtPath<GameObject>(RemoteCarPrefab).GetComponent<RemoteCar>();
@@ -493,7 +493,7 @@ namespace UnityLab.EditorTools
             MigrateSceneCommon(scene);
 
             // Army A is the player's; army B is played by the AI commander.
-            foreach (ArmyController army in Object.FindObjectsByType<ArmyController>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (ArmyController army in Object.FindObjectsByType<ArmyController>(FindObjectsInactive.Include))
             {
                 var serialized = new SerializedObject(army);
                 serialized.FindProperty("playerControlled").boolValue = army.name.EndsWith("A", StringComparison.Ordinal);

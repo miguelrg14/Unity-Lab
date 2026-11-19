@@ -108,7 +108,7 @@ namespace UnityLab.SmokeTest
         IEnumerator RtsStep()
         {
             yield return LoadScene(Scenes.RtsBattlefield);
-            ArmyController[] armies = FindObjectsByType<ArmyController>(FindObjectsSortMode.None);
+            ArmyController[] armies = FindObjectsByType<ArmyController>();
             Check(armies.Length == 2, "RTS scene has two armies");
 
             var seen = new HashSet<Unit>();
@@ -118,7 +118,7 @@ namespace UnityLab.SmokeTest
             bool screenshotTaken = false;
             while (Time.time < end)
             {
-                foreach (Unit unit in FindObjectsByType<Unit>(FindObjectsSortMode.None))
+                foreach (Unit unit in FindObjectsByType<Unit>())
                 {
                     seen.Add(unit);
                     teamsWithUnits.Add(unit.Team.TeamNumber);

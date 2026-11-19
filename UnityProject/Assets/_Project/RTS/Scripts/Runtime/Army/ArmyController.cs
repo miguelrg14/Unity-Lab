@@ -55,7 +55,7 @@ namespace UnityLab.RTS.Army
             selectableMask = LayerMask.GetMask("Selectable");
             floorMask = LayerMask.GetMask("Floor");
 
-            foreach (Unit unit in FindObjectsByType<Unit>(FindObjectsSortMode.None))
+            foreach (Unit unit in FindObjectsByType<Unit>())
             {
                 if (unit.Team.TeamNumber == team.TeamNumber)
                     AddUnit(unit);

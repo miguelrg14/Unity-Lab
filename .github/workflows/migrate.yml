@@ -1,5 +1,6 @@
-# One-off: runs ProjectMigration in the Unity Editor (batch mode) and uploads the resulting
-# project files, which are then committed. Triggered by changing .github/migrate.trigger.
+# One-off: runs ProjectMigration in the Unity Editor (batch mode) and pushes the resulting
+# project files to the migration-output branch, from where they are reviewed and committed.
+# Triggered by changing .github/migrate.trigger.
 name: Editor migration
 
 on:
@@ -11,6 +12,8 @@ on:
 jobs:
   migrate:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: jlumbroso/free-disk-space@v1.3.1
         with:
@@ -34,18 +37,13 @@ jobs:
           versioning: None
           allowDirtyBuild: true
 
-      - name: Collect migrated project
-        if: always()
+      - name: Push the migrated project to the migration-output branch
         run: |
-          sudo chown -R "$(id -u):$(id -g)" UnityProject || true
-          mkdir -p migrated
-          cp -r UnityProject/Assets UnityProject/ProjectSettings UnityProject/Packages migrated/ || true
-          cp UnityProject/migration-report.txt migrated/ || true
-          ls -la migrated
-
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: migrated-project
-          path: migrated
-          retention-days: 3
+          sudo chown -R "$(id -u):$(id -g)" UnityProject
+          git config user.name "Miguel Rodríguez Gallego"
+          git config user.email "miguelrodriguezgallego1@gmail.com"
+          git checkout -B migration-output
+          git add -A UnityProject
+          git add -f UnityProject/migration-report.txt
+          git commit -q -m "Editor migration output"
+          git push -f origin migration-output
