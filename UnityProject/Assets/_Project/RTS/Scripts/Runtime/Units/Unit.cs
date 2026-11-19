@@ -50,6 +50,7 @@ namespace UnityLab.RTS.Units
         protected Unit currentEnemy;
         Vector3 currentDestination;
         float attackCooldown;
+        float stalledTime;
         Camera mainCamera;
 
         public NavMeshAgent Agent { get; private set; }
@@ -140,7 +141,10 @@ namespace UnityLab.RTS.Units
                 currentEnemy = null;
             }
 
-            if (squaredToDestination <= arrivalThreshold * arrivalThreshold || HasArrived())
+            // An agent blocked short of its destination (by another unit or a building) stops
+            // moving without finishing its path; after a moment that counts as arrived too.
+            stalledTime = Agent.velocity.sqrMagnitude < 0.01f ? stalledTime + Time.deltaTime : 0f;
+            if (squaredToDestination <= arrivalThreshold * arrivalThreshold || HasArrived() || stalledTime > 0.5f)
                 SetIdle();
         }
 
@@ -253,6 +257,7 @@ namespace UnityLab.RTS.Units
             if (State == UnitState.Dying || !Agent.isOnNavMesh)
                 return;
             currentDestination = destination;
+            stalledTime = 0f;
             Agent.isStopped = false;
             Agent.SetDestination(destination);
             State = UnitState.GoingTo;

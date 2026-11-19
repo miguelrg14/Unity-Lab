@@ -33,7 +33,6 @@ jobs:
           haskell: true
           large-packages: false
       - name: Add swap space
-        if: matrix.targetPlatform == 'WebGL'
         run: |
           sudo swapoff -a
           sudo rm -f /mnt/swapfile
@@ -49,7 +48,21 @@ jobs:
           path: ${{ env.PROJECT_PATH }}/Library
           key: Library-${{ matrix.targetPlatform }}-${{ hashFiles('UnityProject/Assets/**', 'UnityProject/Packages/**', 'UnityProject/ProjectSettings/**') }}
           restore-keys: Library-${{ matrix.targetPlatform }}-
+      # The editor is occasionally killed while starting (exit code 137); one retry absorbs it.
       - uses: game-ci/unity-builder@v4
+        id: build
+        continue-on-error: true
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: ${{ env.PROJECT_PATH }}
+          targetPlatform: ${{ matrix.targetPlatform }}
+          buildName: UnityLab
+          versioning: ${{ startsWith(github.ref, 'refs/tags/') && 'Tag' || 'None' }}
+      - uses: game-ci/unity-builder@v4
+        if: steps.build.outcome == 'failure'
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}

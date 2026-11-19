@@ -92,8 +92,11 @@ jobs:
           path: ${{ env.PROJECT_PATH }}/Library
           key: Library-test-${{ hashFiles('UnityProject/Assets/**', 'UnityProject/Packages/**', 'UnityProject/ProjectSettings/**') }}
           restore-keys: Library-test-
+      # The editor is occasionally killed while starting (exit code 137). Only in that case, when
+      # no test results were written, the run is repeated once; real test failures fail the job.
       - uses: game-ci/unity-test-runner@v4
         id: tests
+        continue-on-error: true
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
@@ -103,11 +106,26 @@ jobs:
           testMode: all
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           checkName: Unity test results
+      - uses: game-ci/unity-test-runner@v4
+        id: tests-retry
+        if: steps.tests.outcome == 'failure' && hashFiles('artifacts/*.xml') == ''
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: ${{ env.PROJECT_PATH }}
+          testMode: all
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          checkName: Unity test results (retry)
+      - name: Fail if the tests failed
+        if: steps.tests.outcome == 'failure' && steps.tests-retry.outcome != 'success'
+        run: exit 1
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: unity-test-results
-          path: ${{ steps.tests.outputs.artifactsPath }}
+          path: artifacts
 
   unity-build:
     name: Build ${{ matrix.targetPlatform }}
@@ -126,7 +144,6 @@ jobs:
           large-packages: false
       # Linking the web player can exceed the runner's RAM (exit code 137) without extra swap.
       - name: Add swap space
-        if: matrix.targetPlatform == 'WebGL'
         run: |
           sudo swapoff -a
           sudo rm -f /mnt/swapfile
@@ -140,7 +157,21 @@ jobs:
           path: ${{ env.PROJECT_PATH }}/Library
           key: Library-${{ matrix.targetPlatform }}-${{ hashFiles('UnityProject/Assets/**', 'UnityProject/Packages/**', 'UnityProject/ProjectSettings/**') }}
           restore-keys: Library-${{ matrix.targetPlatform }}-
+      # The editor is occasionally killed while starting (exit code 137); one retry absorbs it.
       - uses: game-ci/unity-builder@v4
+        id: build
+        continue-on-error: true
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: ${{ env.PROJECT_PATH }}
+          targetPlatform: ${{ matrix.targetPlatform }}
+          buildName: UnityLab
+          versioning: None
+      - uses: game-ci/unity-builder@v4
+        if: steps.build.outcome == 'failure'
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
