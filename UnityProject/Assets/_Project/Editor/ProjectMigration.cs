@@ -24,8 +24,8 @@ namespace UnityLab.EditorTools
 {
     /// <summary>
     /// One-off migration that turned the two original course projects into this single Unity 6
-    /// project. It ran once in CI (batch mode); its output is what the repository contains now.
-    /// It is kept as documentation of how the assets were produced.
+    /// project. It ran in batch mode on GitHub Actions through a one-off workflow; its output is
+    /// what the repository contains now, and it is kept as documentation of how the assets were made.
     ///
     /// Steps: replace every third-party model and material with procedural ones of the same size,
     /// build the online race scene from the single-player one, build the main menu, bake the RTS

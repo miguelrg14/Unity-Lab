@@ -13,7 +13,13 @@ Two gameplay programming prototypes in one Unity 6 project, plus the dedicated s
 
 **▶ [Play it in the browser](https://miguelrg14.github.io/Unity-Lab/)** (racing against the AI and the RTS; online races need the desktop build) · **[Download the latest release](https://github.com/miguelrg14/Unity-Lab/releases/latest)**
 
-<!-- SCREENSHOTS -->
+| Racing vs AI | Online race (two game instances and the real server) |
+|---|---|
+| ![Racing against the AI](docs/screenshots/racing.jpg) | ![Online race](docs/screenshots/racing-online.jpg) |
+| **RTS: harvesters working and units training** | **RTS: the armies meet** |
+| ![RTS harvesting](docs/screenshots/rts-harvesting.jpg) | ![RTS battle](docs/screenshots/rts-battle.jpg) |
+
+<sub>Captured automatically by the CI smoke test on a headless Linux build. Main menu: [docs/screenshots/main-menu.jpg](docs/screenshots/main-menu.jpg).</sub>
 
 ## Projects
 

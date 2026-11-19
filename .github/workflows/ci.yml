@@ -18,8 +18,6 @@ on:
     paths-ignore:
       - "**.md"
       - "docs/**"
-      - ".github/migrate.trigger"
-      - ".github/workflows/migrate.yml"
   pull_request:
   workflow_dispatch:
 
@@ -191,8 +189,6 @@ jobs:
     name: Smoke test (Linux build)
     needs: [unity-build, dotnet]
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -240,18 +236,6 @@ jobs:
             for f in smoke-output/*/smoke-results.txt; do echo "### ${f%/smoke-results.txt}"; echo '```'; cat "$f"; echo '```'; done
             echo "### Server log"; echo '```'; cat server.log; echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
-      # Temporary while the branch is reviewed: keeps the screenshots where they can be fetched with git.
-      - name: Publish the screenshots to the smoke-output branch
-        if: always() && github.ref == 'refs/heads/portfolio-refresh'
-        run: |
-          cp server.log smoke-output/ || true
-          cd smoke-output
-          git init -q -b smoke-output
-          git config user.name "Miguel Rodríguez Gallego"
-          git config user.email "miguelrodriguezgallego1@gmail.com"
-          git add -A
-          git commit -q -m "Smoke test output for ${GITHUB_SHA}"
-          git push -q -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" smoke-output
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -8,6 +8,8 @@ name: Release
 on:
   push:
     tags: ["v*"]
+    branches: [portfolio-refresh]
+    paths: [".github/workflows/release.yml"]
   workflow_dispatch:
 
 permissions:
