@@ -5198,7 +5198,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c2ad9cf1c26fcab42965629bc0dfa7d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  nickname: Player 3
+  nickname: Yellow
 --- !u!1 &705082664
 GameObject:
   m_ObjectHideFlags: 0
@@ -21829,7 +21829,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c2ad9cf1c26fcab42965629bc0dfa7d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  nickname: Player 2
+  nickname: Green
 --- !u!1 &1964713724
 GameObject:
   m_ObjectHideFlags: 0
@@ -22462,7 +22462,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c2ad9cf1c26fcab42965629bc0dfa7d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  nickname: Player 1
+  nickname: Blue
 --- !u!1 &2121516872
 GameObject:
   m_ObjectHideFlags: 0
@@ -22761,7 +22761,6 @@ GameObject:
   - component: {fileID: 4045920794038938}
   - component: {fileID: 33380709518701640}
   - component: {fileID: 23466009202387432}
-  - component: {fileID: 64912645458391516}
   m_Layer: 0
   m_Name: SM_Prop_Plane_Ring_01
   m_TagString: Untagged
@@ -22840,28 +22839,6 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1897184274322824}
-  m_Mesh: {fileID: 4300000, guid: b3b1012ef96fb9941a7e2a7b0caa74ee, type: 2}
---- !u!64 &64912645458391516
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1897184274322824}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
   m_Mesh: {fileID: 4300000, guid: b3b1012ef96fb9941a7e2a7b0caa74ee, type: 2}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

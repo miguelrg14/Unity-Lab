@@ -1,0 +1,3 @@
+Rebuilt Assets/_Project/Shared/Art/Meshes/Ring_10.asset as an upright hoop ((17.38, 17.38, 0.70)).
+Assets/_Project/Racing/Scenes/SinglePlayer.unity: removed 1 ring colliders, named 3 AI cars.
+Assets/_Project/Racing/Scenes/Online.unity: removed 1 ring colliders, named 0 AI cars.
