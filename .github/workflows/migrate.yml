@@ -1,0 +1,51 @@
+# One-off: runs ProjectMigration in the Unity Editor (batch mode) and uploads the resulting
+# project files, which are then committed. Triggered by changing .github/migrate.trigger.
+name: Editor migration
+
+on:
+  push:
+    paths:
+      - .github/migrate.trigger
+  workflow_dispatch:
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: jlumbroso/free-disk-space@v1.3.1
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: false
+
+      - uses: actions/checkout@v4
+
+      - uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: UnityProject
+          targetPlatform: StandaloneLinux64
+          buildMethod: UnityLab.EditorTools.ProjectMigration.RunFromCommandLine
+          versioning: None
+          allowDirtyBuild: true
+
+      - name: Collect migrated project
+        if: always()
+        run: |
+          sudo chown -R "$(id -u):$(id -g)" UnityProject || true
+          mkdir -p migrated
+          cp -r UnityProject/Assets UnityProject/ProjectSettings UnityProject/Packages migrated/ || true
+          cp UnityProject/migration-report.txt migrated/ || true
+          ls -la migrated
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: migrated-project
+          path: migrated
+          retention-days: 3
