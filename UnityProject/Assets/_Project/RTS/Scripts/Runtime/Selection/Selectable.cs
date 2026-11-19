@@ -14,6 +14,9 @@ namespace UnityLab.RTS.Selection
         static readonly int OutlineColor = Shader.PropertyToID("_Outline_Color");
         static readonly int BaseColor = Shader.PropertyToID("_Color");
 
+        [Tooltip("How strongly the body is tinted with the team colour (units strongly, buildings lightly).")]
+        [SerializeField, Range(0f, 1f)] float bodyTint = 0.55f;
+
         Renderer targetRenderer;
         MaterialPropertyBlock block;
         Color teamColor = Color.white;
@@ -44,9 +47,9 @@ namespace UnityLab.RTS.Selection
             if (targetRenderer == null)
                 return;
 
-            // Body: a light tint of the team colour.
+            // Body: a tint of the team colour.
             block.Clear();
-            block.SetColor(BaseColor, Color.Lerp(Color.white, teamColor, 0.55f));
+            block.SetColor(BaseColor, Color.Lerp(Color.white, teamColor, bodyTint));
             targetRenderer.SetPropertyBlock(block, 0);
 
             if (targetRenderer.sharedMaterials.Length < 2)

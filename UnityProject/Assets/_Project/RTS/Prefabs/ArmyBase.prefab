@@ -49,7 +49,7 @@ GameObject:
   - component: {fileID: 4405340943057215883}
   - component: {fileID: 4405340943057215882}
   m_Layer: 7
-  m_Name: ArmyBase A
+  m_Name: ArmyBase
   m_TagString: ArmyBase
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -226,6 +226,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4be4b08332d562949bb3f3d46efa0a2e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  bodyTint: 0.2
 --- !u!114 &4405340943057215882
 MonoBehaviour:
   m_ObjectHideFlags: 0
